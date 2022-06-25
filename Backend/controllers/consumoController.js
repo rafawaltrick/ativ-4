@@ -85,7 +85,7 @@ export const listagemConsumo = async (req,res) =>{
         ]
         })
         const consumidos = consumo.reduce((acc,cur)=>{
-                if(cur.serv_id){
+                if(cur.servico){
                     if (acc[`servico_${cur.serv_id}`]){
                         acc[`servico_${cur.serv_id}`].qtd++
                     }
@@ -97,7 +97,7 @@ export const listagemConsumo = async (req,res) =>{
                         }
                     }
                 }
-                if(cur.prod_id){
+                if(cur.produto){
                     if (acc[`produto_${cur.prod_id}`]){
                     acc[`produto_${cur.prod_id}`].qtd++
                 }
@@ -142,12 +142,12 @@ export const listMostConsumByValue = async (req, res) => {
 
         const clientes = dados.map(c=>{
             let total = 0
-            console.log('aki esta erro',c)
             c.dataValues.Consumos.forEach(p=>{
-                if(p.dataValues.serv_id) {
+                console.log('akiadwadawdawdawda',p)
+                if(p.dataValues.serv_id && p.dataValues.servico) {
                     total +=p.dataValues.servico.precoServico
                 }
-                if(p.dataValues.prod_id) {
+                if(p.dataValues.prod_id && p.dataValues.produto) {
                     total +=p.dataValues.produto.preco
                 }
             })
@@ -213,6 +213,39 @@ export const listLessConsumo = async (req, res) => {
         }).sort((a,b)=>a.total-b.total).slice(0,10)
         res.status(201).json(clientes)
     }catch(error){
+        res.status(500).json({ message:error })
+    }
+}
+
+
+export const consumoCliente = async (req,res)=>{
+    try{
+        const dados = await Consumo.findAll({
+            attributes:["id","cli_id","prod_id","serv_id"],
+            include:[
+                {
+                    model:Produto,
+                    attributes:["nome","preco","descricao"
+                        
+                    ]
+                },{
+                    model:Servico,
+                    attributes:[
+                        "nomeServico","precoServico","descricaoServico"
+                    ]
+                },
+                {
+                    model:Cliente,
+                    where:{
+                        id:req.params.id,
+                    }, attributes:["id"]
+                }
+            ]
+        })
+        res.json(dados)
+
+    }catch(error){
+        console.log(error)
         res.status(500).json({ message:error })
     }
 }
